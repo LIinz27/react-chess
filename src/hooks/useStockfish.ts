@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Chess } from 'chess.js';
 
 interface StockfishMove {
   bestMove: string;
@@ -38,27 +39,44 @@ export const useStockfish = (difficulty: number = 3) => {
 
     setIsAnalyzing(true);
     
-    // Simulate engine analysis (in real implementation, this would call actual Stockfish)
+    // Simulate engine analysis with valid moves for current position
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Mock response based on difficulty and position
-        const mockMoves = ['e2e4', 'Nf3', 'd2d4', 'Nc3', 'Bb5'];
-        const randomMove = mockMoves[Math.floor(Math.random() * mockMoves.length)];
-        
-        // Simple evaluation based on FEN position
-        const pieceCount = fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length;
-        const evaluation = (pieceCount - 32) * 0.1; // Rough material evaluation
-        
-        const result: StockfishMove = {
-          bestMove: randomMove,
-          evaluation,
-          depth: difficulty * 2 + 8 // Depth based on difficulty
-        };
-        
-        setBestMove(result);
-        setIsAnalyzing(false);
-        resolve(result);
-      }, 1000 + (difficulty * 500)); // Analysis time based on difficulty
+        // Create a temporary chess instance to get valid moves
+        try {
+          const tempChess = new Chess(fen);
+          const legalMoves = tempChess.moves({ verbose: true });
+          
+          if (legalMoves.length === 0) {
+            setIsAnalyzing(false);
+            resolve(null);
+            return;
+          }
+          
+          // Pick a random legal move (in real implementation, this would be engine analysis)
+          const randomIndex = Math.floor(Math.random() * legalMoves.length);
+          const selectedMove = legalMoves[randomIndex];
+          
+          // Simple evaluation based on move type and difficulty
+          let evaluation = Math.random() * 0.5 - 0.25; // Base random evaluation
+          if (selectedMove.captured) evaluation += 0.3; // Favor captures
+          if (selectedMove.san.includes('+')) evaluation += 0.2; // Favor checks
+          
+          const result: StockfishMove = {
+            bestMove: selectedMove.san, // Use SAN notation instead of UCI
+            evaluation,
+            depth: difficulty * 2 + 8
+          };
+          
+          setBestMove(result);
+          setIsAnalyzing(false);
+          resolve(result);
+        } catch (error) {
+          console.error('Error analyzing position:', error);
+          setIsAnalyzing(false);
+          resolve(null);
+        }
+      }, 500 + (difficulty * 300)); // Analysis time based on difficulty
     });
   };
 

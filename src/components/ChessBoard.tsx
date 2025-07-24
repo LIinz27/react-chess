@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Chess } from 'chess.js';
+import styles from './ChessBoard.module.css';
 
 interface ChessBoardProps {
   game: Chess;
@@ -15,6 +16,13 @@ export const ChessBoard: React.FC<ChessBoardProps> = ({
   disabled = false
 }) => {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
+  const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
+
+  // Clear selection and possible moves when game changes
+  useEffect(() => {
+    setMoveFrom(null);
+    setPossibleMoves([]);
+  }, [game.fen()]);
 
   const renderBoard = () => {
     const board = game.board();
@@ -33,27 +41,27 @@ export const ChessBoard: React.FC<ChessBoardProps> = ({
         const piece = board[isFlipped ? 7 - rank : rank]?.[isFlipped ? 7 - file : file];
         const isLight = (rank + file) % 2 === 0;
         const isSelected = moveFrom === square;
+        const isPossibleMove = possibleMoves.includes(square);
         
         squares.push(
           <div
             key={square}
-            className={`chess-square ${isLight ? 'light' : 'dark'} ${isSelected ? 'selected' : ''}`}
+            className={`${styles.square} ${isLight ? styles.light : styles.dark} 
+              ${isSelected ? styles.selected : ''} 
+              ${isPossibleMove && piece ? styles.possibleCapture : ''} 
+              ${isPossibleMove && !piece ? styles.possibleMove : ''}`}
             onClick={() => handleSquareClick(square)}
-            style={{
-              width: '12.5%',
-              height: '12.5%',
-              backgroundColor: isSelected ? '#FFFF99' : isLight ? '#F0D9B5' : '#B58863',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: disabled ? 'default' : 'pointer',
-              fontSize: '2rem',
-              fontWeight: 'bold',
-              userSelect: 'none',
-              border: isSelected ? '2px solid #FFD700' : 'none',
-            }}
+            style={{ cursor: disabled ? 'default' : 'pointer' }}
           >
-            {piece && getPieceSymbol(piece)}
+            <div className={styles.highlightBorder} />
+            {piece && (
+              <span className={`${styles.piece} ${piece.color === 'b' ? styles.darkPiece : ''}`}>
+                {getPieceSymbol(piece)}
+              </span>
+            )}
+            {isPossibleMove && !piece && (
+              <div className={styles.moveIndicator} />
+            )}
           </div>
         );
       }
@@ -63,11 +71,22 @@ export const ChessBoard: React.FC<ChessBoardProps> = ({
   };
 
   const getPieceSymbol = (piece: any) => {
+    // Unicode chess symbols with fallback
     const symbols = {
       'wP': '♙', 'wR': '♖', 'wN': '♘', 'wB': '♗', 'wQ': '♕', 'wK': '♔',
       'bP': '♟', 'bR': '♜', 'bN': '♞', 'bB': '♝', 'bQ': '♛', 'bK': '♚'
     };
-    return symbols[piece.color + piece.type.toUpperCase() as keyof typeof symbols] || '';
+    
+    // Fallback text symbols if Unicode not supported
+    const fallbackSymbols = {
+      'wP': 'P', 'wR': 'R', 'wN': 'N', 'wB': 'B', 'wQ': 'Q', 'wK': 'K',
+      'bP': 'p', 'bR': 'r', 'bN': 'n', 'bB': 'b', 'bQ': 'q', 'bK': 'k'
+    };
+    
+    const pieceKey = piece.color + piece.type.toUpperCase() as keyof typeof symbols;
+    
+    // Try Unicode first, fallback to text if needed
+    return symbols[pieceKey] || fallbackSymbols[pieceKey] || '?';
   };
 
   const handleSquareClick = useCallback((square: string) => {
@@ -86,12 +105,17 @@ export const ChessBoard: React.FC<ChessBoardProps> = ({
       const piece = game.get(square as any);
       if (piece && piece.color === game.turn()) {
         setMoveFrom(square);
+        // Get possible moves for the selected piece
+        const moves = game.moves({ square: square as any, verbose: true });
+        const moveTargets = moves.map(move => move.to);
+        setPossibleMoves(moveTargets);
       }
       return;
     }
 
     if (moveFrom === square) {
       setMoveFrom(null);
+      setPossibleMoves([]);
       return;
     }
 
@@ -102,32 +126,58 @@ export const ChessBoard: React.FC<ChessBoardProps> = ({
         game.undo(); // Undo the move first
         onMove(moveFrom, square);
         setMoveFrom(null);
+        setPossibleMoves([]);
       }
     } catch {
       // Invalid move, try selecting the new square
       const piece = game.get(square as any);
       if (piece && piece.color === game.turn()) {
         setMoveFrom(square);
+        // Get possible moves for the new selected piece
+        const moves = game.moves({ square: square as any, verbose: true });
+        const moveTargets = moves.map(move => move.to);
+        setPossibleMoves(moveTargets);
       } else {
         setMoveFrom(null);
+        setPossibleMoves([]);
       }
     }
   }, [disabled, playerSide, game, moveFrom, onMove]);
 
+  const renderCoordinates = () => {
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const ranks = ['1', '2', '3', '4', '5', '6', '7', '8'];
+    const isFlipped = playerSide === 'black';
+    
+    const displayFiles = isFlipped ? [...files].reverse() : files;
+    const displayRanks = isFlipped ? ranks : [...ranks].reverse();
+    
+    return (
+      <>
+        {/* Rank coordinates (numbers) */}
+        {displayRanks.map(rank => (
+          <div key={`rank_${rank}`} className={`${styles.coordinate} ${styles.rankCoordinate} ${styles['r' + (isFlipped ? 9 - parseInt(rank) : rank)]}`}>
+            {rank}
+          </div>
+        ))}
+        
+        {/* File coordinates (letters) */}
+        {displayFiles.map(file => (
+          <div key={`file_${file}`} className={`${styles.coordinate} ${styles.fileCoordinate} ${styles['f' + file]}`}>
+            {file}
+          </div>
+        ))}
+      </>
+    );
+  };
+
   return (
-    <div className="chess-board-container" style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <div 
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          width: '100%',
-          aspectRatio: '1',
-          border: '2px solid #8B4513',
-          borderRadius: '4px',
-          backgroundColor: '#DEB887'
-        }}
-      >
-        {renderBoard()}
+    <div className={styles.boardContainer}>
+      <div className={styles.chessBoardWrapper}>
+        {renderCoordinates()}
+        <div className={styles.chessBoard}>
+          {renderBoard()}
+        </div>
       </div>
       <div style={{ textAlign: 'center', marginTop: '1rem', color: '#666' }}>
         {disabled && <p>Game paused</p>}

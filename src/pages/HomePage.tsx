@@ -63,6 +63,7 @@ export const HomePage: React.FC = () => {
       borderRadius: '8px',
       fontSize: '1rem',
       backgroundColor: 'white',
+      color: '#333',
       cursor: 'pointer',
       transition: 'border-color 0.2s',
     },
@@ -73,6 +74,7 @@ export const HomePage: React.FC = () => {
       borderRadius: '8px',
       fontSize: '1rem',
       backgroundColor: 'white',
+      color: '#333',
       transition: 'border-color 0.2s',
     },
     rangeContainer: {
@@ -138,7 +140,9 @@ export const HomePage: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.title}>♔ Chess Master</h1>
+        <h1 style={styles.title}>
+          <span style={{ fontFamily: 'Segoe UI Symbol, serif' }}>♔</span> Chess Master
+        </h1>
         <p style={styles.subtitle}>Play against the powerful Stockfish engine</p>
 
         <div style={styles.section}>

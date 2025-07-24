@@ -12,6 +12,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Chess piece font support */
+.chess-piece {
+  font-family: 'Segoe UI Symbol', 'DejaVu Sans', 'Noto Color Emoji', 
+               'Apple Color Emoji', 'Segoe UI Emoji', serif;
+  font-size: 2rem;
+  font-weight: normal;
+  line-height: 1;
+}
+
 #root {
   width: 100%;
   min-height: 100vh;
@@ -32,10 +41,35 @@ body {
   margin: 0 auto;
 }
 
+/* Chess square styling */
+.chess-square {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.chess-square:hover {
+  transform: scale(1.05);
+  z-index: 1;
+}
+
+.chess-square.selected {
+  box-shadow: inset 0 0 0 3px #FFD700;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .chess-board-container {
     max-width: 90vw;
+  }
+  
+  .chess-piece {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chess-piece {
+    font-size: 1.2rem;
   }
 }
 

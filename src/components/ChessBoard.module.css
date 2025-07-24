@@ -1,0 +1,130 @@
+.chessBoardWrapper {
+  display: grid;
+  grid-template-columns: 20px repeat(8, 65px) 20px;
+  grid-template-rows: 20px repeat(8, 65px) 20px;
+  background-color: #DEB887;
+  border: 3px solid #8B4513;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chessBoard {
+  grid-column: 2 / 10;
+  grid-row: 2 / 10;
+  display: grid;
+  grid-template-columns: repeat(8, 65px);
+  grid-template-rows: repeat(8, 65px);
+}
+
+.coordinate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #5D4037;
+  font-weight: bold;
+  user-select: none;
+}
+
+.fileCoordinate {
+  grid-row: 10;
+}
+
+.rankCoordinate {
+  grid-column: 1;
+}
+
+/* Coordinate positions */
+.r8 { grid-row: 2; }
+.r7 { grid-row: 3; }
+.r6 { grid-row: 4; }
+.r5 { grid-row: 5; }
+.r4 { grid-row: 6; }
+.r3 { grid-row: 7; }
+.r2 { grid-row: 8; }
+.r1 { grid-row: 9; }
+
+.fa { grid-column: 2; }
+.fb { grid-column: 3; }
+.fc { grid-column: 4; }
+.fd { grid-column: 5; }
+.fe { grid-column: 6; }
+.ff { grid-column: 7; }
+.fg { grid-column: 8; }
+.fh { grid-column: 9; }
+
+.square {
+  width: 65px;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.light {
+  background-color: #F0D9B5;
+}
+
+.dark {
+  background-color: #B58863;
+}
+
+.selected {
+  background-color: #FFFF99 !important;
+}
+
+.possibleMove {
+  background-color: #90EE90 !important;
+}
+
+.possibleCapture {
+  background-color: #FFB6C1 !important;
+}
+
+.highlightBorder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.selected .highlightBorder {
+  border: 3px solid #FFD700;
+}
+
+.possibleMove .highlightBorder,
+.possibleCapture .highlightBorder {
+  border: 3px solid #32CD32;
+}
+
+.piece {
+  font-size: 45px;
+  z-index: 1;
+  color: #2C3E50;
+  text-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+}
+
+.darkPiece {
+  color: #34495E;
+}
+
+.moveIndicator {
+  width: 20px;
+  height: 20px;
+  background-color: #32CD32;
+  border-radius: 50%;
+  opacity: 0.7;
+  position: absolute;
+  z-index: 1;
+}
+
+.boardContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+}

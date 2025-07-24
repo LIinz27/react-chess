@@ -92,10 +92,10 @@ export const GamePage: React.FC = () => {
         try {
           const bestMove = await getBestMove(newGame.fen());
           if (bestMove) {
-            // Parse engine move (simplified - in real implementation you'd need proper move parsing)
             setTimeout(() => {
               const engineGame = new Chess(newGame.fen());
               try {
+                // Use SAN notation directly since our mock engine returns SAN
                 const engineMove = engineGame.move(bestMove);
                 if (engineMove) {
                   const engineMoveObj: Move = {
@@ -121,12 +121,14 @@ export const GamePage: React.FC = () => {
                 console.error('Engine move error:', error);
               }
               setIsThinking(false);
-            }, 500);
+            }, 300); // Small delay for better UX
+          } else {
+            setIsThinking(false);
           }
         } catch (error) {
           console.error('Failed to get engine move:', error);
+          setIsThinking(false);
         }
-        setIsThinking(false);
       }
     }
   }, [game, moves, settings.playerSide, stockfishReady, getBestMove, updateGameState, playMoveSound]);
